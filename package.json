@@ -1,0 +1,23 @@
+{
+  "name": "wordpress-widget-boilerplate",
+  "version": "1.0.0",
+  "description": "This repository contains the boilerplate code for creating a wordpress widget",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MaPhil/wordpress-widget-boilerplate.git"
+  },
+  "author": "Philipp Mainz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MaPhil/wordpress-widget-boilerplate/issues"
+  },
+  "homepage": "https://github.com/MaPhil/wordpress-widget-boilerplate#readme",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-sass": "^4.0.1"
+  }
+}
