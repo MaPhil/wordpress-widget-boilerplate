@@ -1,0 +1,15 @@
+<div class="slider {{test1}}">
+	wgt_for:start[test2]
+	<div class="slide">
+		<img src="{{test2.path}}"/>
+		wgt_if:start[test3="true"]
+		<div class="caption">
+			{{test2.caption}}
+		</div>
+		wgt_if:end[test3]
+	</div>
+	wgt_for:start[test4]
+	test
+	wgt_for:end[test4]
+	wgt_for:end[test2]
+</div>
