@@ -1,6 +1,9 @@
 
 dist
 .DS_Store
+css/*
+html/*
+js/*
 # Logs
 logs
 *.log
