@@ -17,12 +17,9 @@
   },
   "homepage": "https://github.com/MaPhil/wordpress-widget-boilerplate#readme",
   "devDependencies": {
-    "gulp": "^3.9.1",
-    "gulp-copy": "^1.1.0",
-    "gulp-sass": "^4.0.1"
+    "gulp": "^3.9.1"
   },
   "dependencies": {
-    "gulp-compass": "^2.1.0",
     "lodash": "^4.17.10"
   }
 }
