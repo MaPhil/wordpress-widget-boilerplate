@@ -1,6 +1,7 @@
 'use strict';
 var _ = require('lodash');
-
+var hasTitle = false;
+var titleName = '';
 
 async function handleVariables(v,content,prefix){
 	let out = [];
@@ -41,8 +42,8 @@ async function handleVariables(v,content,prefix){
 			out.push({
 				kind:'php',
 				value:`
-				if (  empty( ${v.name} ) ) echo '${v.default}';
-				else echo ${v.name};
+				if (  empty( $${v.name} ) ) echo '${v.default}';
+				else echo $${v.name};
 				`
 			})
 		}
@@ -81,7 +82,7 @@ async function splitFor(rs,c,v){
 		var ma = match[count2].replace(r1,'').replace(r2,'');	
 		out.push({
 			kind:'php',
-			value:`foreach ($item_${v.name} as $${v.name}){`
+			value:`foreach ($${v.name} as $item_${v.name}){`
 			})	
 		let tmaRes = await handleVariables(v,ma,true);
 
@@ -217,10 +218,14 @@ async function createForm(vl){
     <label for="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>">  
      <?php _e( '${vl[i].title}' ); ?>
     </label>
-<select>
+<select class='widefat' id="<?php echo $this->get_field_id('${vl[i].name}'); ?>"
+                name="<?php echo $this->get_field_name('${vl[i].name}'); ?>" type="text">
 <?php 
 foreach($results as $res){
-  echo '<option value="'.$res->id.'">'.$res->name.'</option>';
+  echo '<option value="';
+  echo $res->id .'" ';
+  echo ($${vl[i].name}=="$res->id")?'selected':'';
+  echo '>'.$res->name.'</option>';
 }
 ?>
 </select>
@@ -233,26 +238,40 @@ foreach($results as $res){
 module.exports = {
 
 	widget_basis: async(config)=>{
-		var out ='';
+		var out ='extract($args);\n';
 		for(var i=0;i<config.scripts.length;i++){
 			if(config.scripts[i].kind == 'style')out+=`wp_enqueue_style('${config.widget_name.replace(/\s+/gm,'')}_sid_${i}', get_template_directory_uri() . "/widgets/${config.widget_name.replace(/\s+/gm,'')}/assets/${config.scripts[i].file}",array(), '1.0.0','all');\n`;
 			else out+=`wp_enqueue_script('${config.widget_name.replace(/\s+/gm,'')}_sid_${i}', get_template_directory_uri() . "/widgets/${config.widget_name.replace(/\s+/gm,'')}/assets/${config.scripts[i].file}",array(), '1.0.0',false);\n`;
 		}
-		var hasTitle = false;
+		if(!hasTitle){
+			out+= `if (! empty( $instance['${titleName}'] ) ) $${titleName} = apply_filters( 'widget_title', $instance['${titleName}'] );\n`;
+		}
 		for(var i=0;i<config.variables.length;i++){
 			if(config.variables[i].kind == 'title'){
-				out+= `$${config.variables[i].name} = apply_filters( 'widget_title', $instance['${config.variables[i].name}'] );\n`;
+				out+= `if (! empty( $instance['${config.variables[i].name}'] ) ) $${config.variables[i].name} = apply_filters( 'widget_title', $instance['${config.variables[i].name}'] );\n`;
 			}else{
-				out+= `$${config.variables[i].name} = apply_filters( 'widget_text', $instance['${config.variables[i].name}'] );\n`;
+				out+= `if (! empty( $instance['${config.variables[i].name}'] ) ) $${config.variables[i].name} = apply_filters( 'widget_text', $instance['${config.variables[i].name}'] );\n`;
 			}
 		}
+		out+='global $wpdb;\n';
+		for(var i=0;i<config.variables.length;i++){
+			var cv = config.variables[i];
+			if(cv.kind == 'gallery'){
+				out += `
+$image_entry_table = $wpdb->prefix . "wgp_image_entry"; 	
+$tmp_res = $wpdb->get_results("SELECT * FROM $image_entry_table WHERE gallery_id=$${cv.name}");
+$${cv.name}	= $tmp_res;
+				`;
+			}
+		}
+
 		return out;
 	},
 	general_info: async(config)=>{
-		return `
+		var out = `
 parent::__construct(	
 //Base ID
-'wp_wt_${config.widget_name.replace(/\s+/gm,'')}${parseInt(Math.random()*10000000)}',
+'wp_wt_${config.widget_name.replace(/\s+/gm,'')}${config.id.replace(/\s+/gm,'')}',
 
 //Widget name
 __('${config.widget_name}', 'wpb_widget_domain'), 
@@ -260,30 +279,52 @@ __('${config.widget_name}', 'wpb_widget_domain'),
 // Widget description
 array( 'description' => __( '${config.widget_description}', 'wpb_widget_domain' ), ) 
 );
-		`;
+		$this->defaults = array(`;
+		for(var i=0;i<config.variables.length;i++){
+			out += `'${config.variables[i].name}' => '${ (config.variables[i].default !== undefined) ? config.variables[i].default : ''}',\n`;
+			if(config.variables[i].kind == 'title') hasTitle = true;
+		}
+
+		if(!hasTitle){
+			let ran = parseInt(Math.random()*1000);
+			titleName = `wp_wt_generic_title_${ran}`;
+			out+= `'${titleName}' => ''`;
+		}
+		out+=`);`;
+		return out;
 	},
 	update: async(config)=>{
 		var out ='';
 		out +='$instance = array();';
-		for(var i=0;i<config.scripts.length;i++){
-			out+=`\n$instance['${config.scripts[i].name}']= ( ! empty( $new_instance['${config.scripts[i].name}'] ) ) ? strip_tags( $new_instance['${config.scripts[i].name}'] ) : '';`;
+		for(var i=0;i<config.variables.length;i++){
+			out+=`\n$instance['${config.variables[i].name}']= ( ! empty( $new_instance['${config.variables[i].name}'] ) ) ? strip_tags( $new_instance['${config.variables[i].name}'] ) : '';`;
 		}
-		out+='\n return $instance';
+		if(!hasTitle)out+=`\n$instance['${titleName}']= ( ! empty( $new_instance['${titleName}'] ) ) ? strip_tags( $new_instance['${titleName}'] ) : '';`;
+		out+='\n return $instance;';
 		return out;
 	},
 	form: async(config)=>{
-		var out ='';
+		var out ='$instance = wp_parse_args( (array) $instance, $this->defaults );\n';
 		var hasGallery = false;
+		if(!hasTitle){
+			out += `
+				if ( isset( $instance[ '${titleName}' ] ) ) {
+					$${titleName} = $instance[ '${titleName}' ];
+				}else {
+					$${titleName} = __( '', 'wpb_widget_domain' );
+				}
+				`;
+		}
 		for(var i=0;i<config.variables.length;i++){
-			if(config.variables.kind !='boolean'){
+			if(config.variables[i].kind =='boolean'){
 				out += `
 				if ( isset( $instance[ '${config.variables[i].name}' ] ) ) {
 					$${config.variables[i].name} = $instance[ '${config.variables[i].name}' ];
 				}else {
-					$${config.variables[i].name} = __( '', 'wpb_widget_domain' );
+					$${config.variables[i].name} = __( 'true', 'wpb_widget_domain' );
 				}
 				`;
-			}else if(config.variables.kind == 'gallery'){
+			}else if(config.variables[i].kind == 'gallery'){
 				hasGallery = true;
 				out += `
 				if ( isset( $instance[ '${config.variables[i].name}' ] ) ) {
@@ -297,7 +338,7 @@ array( 'description' => __( '${config.widget_description}', 'wpb_widget_domain' 
 				if ( isset( $instance[ '${config.variables[i].name}' ] ) ) {
 					$${config.variables[i].name} = $instance[ '${config.variables[i].name}' ];
 				}else {
-					$${config.variables[i].name} = __( 'true', 'wpb_widget_domain' );
+					$${config.variables[i].name} = __( '', 'wpb_widget_domain' );
 				}
 				`;
 			}
@@ -305,7 +346,7 @@ array( 'description' => __( '${config.widget_description}', 'wpb_widget_domain' 
 		if(hasGallery) out+=`
 global $wpdb;
 $gallery_table = $wpdb->prefix . "wgp_gallery";
-$results = $wpdb->get_results("SELECT name, id FROM wp_wgp_gallery");
+$results = $wpdb->get_results("SELECT name, id FROM $gallery_table");
 		`;
 		out += '?>\n';
 

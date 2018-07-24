@@ -1,6 +1,8 @@
 module.exports = {
 	widget_name:'test', //only a-z, A-Z, 0-9 und _
 	widget_description:'',
+	version:'0.0.1',
+	id:'00001',
 	scripts:[{
 		kind:'style',
 		name:'style',

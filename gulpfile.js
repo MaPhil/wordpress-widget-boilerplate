@@ -13,7 +13,8 @@ gulp.task('build', async () => {
 
 
   var out = `<?php
-  class wp_wt_${config.widget_name.replace(/\s+/gm,'')} extens WP_Widget {
+  class wp_wt_${config.widget_name.replace(/\s+/gm,'')} extends WP_Widget {
+    protected $defaults;
     function __construct(){
       ${await build.general_info(config)}
     }
@@ -24,7 +25,7 @@ gulp.task('build', async () => {
 
       for(var i=0;i<template.length;i++){
         if(template[i].kind=='php')out +=`\n${template[i].value}\n`;
-        else out +=`\necho '${template[i].value.replace(/\r?\n|\r/g,'')}'\n`;
+        else out +=`\necho '${template[i].value.replace(/\r?\n|\r/g,'')}';\n`;
       }
       out +=`
       echo $args['after_widget'];
