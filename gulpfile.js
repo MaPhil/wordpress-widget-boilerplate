@@ -3,7 +3,6 @@ var gulp = require('gulp'),
 config = require('./config'),
 exec = require('child_process').exec,
 build = require('./build_script/index'),
-compass = require('gulp-compass'),
 fs = require('fs');
 
 let path = `${__dirname}/dist/${config.widget_name.replace(/\s+/gm,'')}`;

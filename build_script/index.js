@@ -259,8 +259,12 @@ module.exports = {
 			if(cv.kind == 'gallery'){
 				out += `
 $image_entry_table = $wpdb->prefix . "wgp_image_entry"; 	
+if($${cv.name} != '' && $${cv.name} != null){
 $tmp_res = $wpdb->get_results("SELECT * FROM $image_entry_table WHERE gallery_id=$${cv.name}");
 $${cv.name}	= $tmp_res;
+}else {
+	$${cv.name}	= array();
+}
 				`;
 			}
 		}
@@ -358,7 +362,7 @@ $results = $wpdb->get_results("SELECT name, id FROM $gallery_table");
 	template: async (fs,config) => {
 		var output = [{
 			kind:'string',
-			value:fs.readFileSync(`${__dirname}/../html/index.html`, "utf8")
+			value:fs.readFileSync(`${__dirname}/../html/index.html`, "utf8").replace(/(?:'|")/gm,'\'');
 		}];
 		for(let i =0;i<config.variables.length;i++){
 			let v = config.variables[i];
