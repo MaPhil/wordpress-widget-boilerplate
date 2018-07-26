@@ -244,13 +244,13 @@ module.exports = {
 			else out+=`wp_enqueue_script('${config.widget_name.replace(/\s+/gm,'')}_sid_${i}', get_template_directory_uri() . "/widgets/${config.widget_name.replace(/\s+/gm,'')}/assets/${config.scripts[i].file}",array(), '1.0.0',false);\n`;
 		}
 		if(!hasTitle){
-			out+= `if (! empty( $instance['${titleName}'] ) ) $${titleName} = apply_filters( 'widget_title', $instance['${titleName}'] );\n`;
+			out+= `$${titleName} = null;\nif (! empty( $instance['${titleName}'] ) ) $${titleName} = apply_filters( 'widget_title', $instance['${titleName}'] );\n`;
 		}
 		for(var i=0;i<config.variables.length;i++){
 			if(config.variables[i].kind == 'title'){
-				out+= `if (! empty( $instance['${config.variables[i].name}'] ) ) $${config.variables[i].name} = apply_filters( 'widget_title', $instance['${config.variables[i].name}'] );\n`;
+				out+= `$${config.variables[i].name} = null;\nif (! empty( $instance['${config.variables[i].name}'] ) ) $${config.variables[i].name} = apply_filters( 'widget_title', $instance['${config.variables[i].name}'] );\n`;
 			}else{
-				out+= `if (! empty( $instance['${config.variables[i].name}'] ) ) $${config.variables[i].name} = apply_filters( 'widget_text', $instance['${config.variables[i].name}'] );\n`;
+				out+= `$${config.variables[i].name} = null;\nif (! empty( $instance['${config.variables[i].name}'] ) ) $${config.variables[i].name} = apply_filters( 'widget_text', $instance['${config.variables[i].name}'] );\n`;
 			}
 		}
 		out+='global $wpdb;\n';
@@ -362,7 +362,7 @@ $results = $wpdb->get_results("SELECT name, id FROM $gallery_table");
 	template: async (fs,config) => {
 		var output = [{
 			kind:'string',
-			value:fs.readFileSync(`${__dirname}/../html/index.html`, "utf8").replace(/(?:'|")/gm,'\'')
+			value:fs.readFileSync(`${__dirname}/../html/index.html`, "utf8")
 		}];
 		for(let i =0;i<config.variables.length;i++){
 			let v = config.variables[i];
