@@ -208,8 +208,9 @@ async function createForm(vl){
 		}else if(vl[i].kind == 'media'){
 			out+=`
 <p>
-	<button class="button button-secondary media-upload-btn"  id="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>"><?php _e( '${vl[i].title}' ); ?></button>
-	<input id="upload-link"/>
+	<div id="display-media-upload-btn<?php echo $this->get_field_id( '${vl[i].name}' ); ?>" style="height: 150px;    margin-bottom: 5px;background-size: cover;background-image:url(\'<?php echo esc_attr( $${vl[i].name} ); ?>\')"></div> 
+	<button class="button button-secondary media-upload-btn"  id="media-upload-btn<?php echo $this->get_field_id( '${vl[i].name}' ); ?>"><?php _e( '${vl[i].title}' ); ?> </button>
+	<input  value="<?php echo esc_attr( $${vl[i].name} ); ?>" class="widefat" name="<?php echo $this->get_field_name( '${vl[i].name}' ); ?>" type="hidden"   id="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>"/>
 </p>
 			`;
 		}else if(vl[i].kind == 'gallery'){
