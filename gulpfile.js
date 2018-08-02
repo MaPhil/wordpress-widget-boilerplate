@@ -57,7 +57,7 @@ gulp.task('ensureFolder', async () =>{
 
 gulp.task('watch', function () {
   gulp.watch('config.js', ['build','assemble']);
-  gulp.watch('html/index.js',['build','assemble']);
+  gulp.watch('html/index.html',['build','assemble']);
   gulp.watch('css/**/*.css',['assemble']);
   gulp.watch('js/**/*.js',['assemble']);
 });

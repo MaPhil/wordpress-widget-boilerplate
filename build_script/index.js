@@ -147,15 +147,13 @@ async function splitIf(rs,c,v){
 	}
 	for(var i=0;i<out.length;i++){
 		if(out[i].kind == 'string' && out[i].value.match(rend) != null){
-
-			
 			flag = true;
 			var temp = [];
 			let count1 = 0,
 			count2 = 0;
 
-			let splitEnd = c.value.split(rend),
-			matchEnd = c.value.match(rend);
+			let splitEnd = out[i].value.split(rend),
+			matchEnd = out[i].value.match(rend);
 			
 			if(splitEnd[count1] && splitEnd[count1] != ''){
 				temp.push({
@@ -208,8 +206,9 @@ async function createForm(vl){
 		}else if(vl[i].kind == 'media'){
 			out+=`
 <p>
-	<button class="button button-secondary media-upload-btn"  id="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>"><?php _e( '${vl[i].title}' ); ?></button>
-	<input id="upload-link"/>
+	<div id="display-media-upload-btn<?php echo $this->get_field_id( '${vl[i].name}' ); ?>" style="height: 150px;    margin-bottom: 5px;background-size: cover;background-image:url(\'<?php echo esc_attr( $${vl[i].name} ); ?>\')"></div> 
+	<button class="button button-secondary media-upload-btn"  id="media-upload-btn<?php echo $this->get_field_id( '${vl[i].name}' ); ?>"><?php _e( '${vl[i].title}' ); ?> </button>
+	<input  value="<?php echo esc_attr( $${vl[i].name} ); ?>" class="widefat" name="<?php echo $this->get_field_name( '${vl[i].name}' ); ?>" type="hidden"   id="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>"/>
 </p>
 			`;
 		}else if(vl[i].kind == 'gallery'){
@@ -244,13 +243,13 @@ module.exports = {
 			else out+=`wp_enqueue_script('${config.widget_name.replace(/\s+/gm,'')}_sid_${i}', get_template_directory_uri() . "/widgets/${config.widget_name.replace(/\s+/gm,'')}/assets/${config.scripts[i].file}",array(), '1.0.0',false);\n`;
 		}
 		if(!hasTitle){
-			out+= `if (! empty( $instance['${titleName}'] ) ) $${titleName} = apply_filters( 'widget_title', $instance['${titleName}'] );\n`;
+			out+= `$${titleName} = null;\nif (! empty( $instance['${titleName}'] ) ) $${titleName} = apply_filters( 'widget_title', $instance['${titleName}'] );\n`;
 		}
 		for(var i=0;i<config.variables.length;i++){
 			if(config.variables[i].kind == 'title'){
-				out+= `if (! empty( $instance['${config.variables[i].name}'] ) ) $${config.variables[i].name} = apply_filters( 'widget_title', $instance['${config.variables[i].name}'] );\n`;
+				out+= `$${config.variables[i].name} = null;\nif (! empty( $instance['${config.variables[i].name}'] ) ) $${config.variables[i].name} = apply_filters( 'widget_title', $instance['${config.variables[i].name}'] );\n`;
 			}else{
-				out+= `if (! empty( $instance['${config.variables[i].name}'] ) ) $${config.variables[i].name} = apply_filters( 'widget_text', $instance['${config.variables[i].name}'] );\n`;
+				out+= `$${config.variables[i].name} = null;\nif (! empty( $instance['${config.variables[i].name}'] ) ) $${config.variables[i].name} = apply_filters( 'widget_text', $instance['${config.variables[i].name}'] );\n`;
 			}
 		}
 		out+='global $wpdb;\n';
@@ -362,7 +361,7 @@ $results = $wpdb->get_results("SELECT name, id FROM $gallery_table");
 	template: async (fs,config) => {
 		var output = [{
 			kind:'string',
-			value:fs.readFileSync(`${__dirname}/../html/index.html`, "utf8").replace(/(?:'|")/gm,'\'');
+			value:fs.readFileSync(`${__dirname}/../html/index.html`, "utf8")
 		}];
 		for(let i =0;i<config.variables.length;i++){
 			let v = config.variables[i];
@@ -399,9 +398,7 @@ $results = $wpdb->get_results("SELECT name, id FROM $gallery_table");
 			};
 			
 			if(v.kind != 'gallery'){
-				// console.log(output.length);
 				for(var j=0;j<output.length;j++){
-					// console.log(output[j].kind);
 					if(output[j].kind == 'string'){
 						
 						let t = await splitIf(rs,output[j],v);
@@ -421,7 +418,6 @@ $results = $wpdb->get_results("SELECT name, id FROM $gallery_table");
 
 			
 			if(v.kind != 'gallery'){
-				// console.log(output.length);
 				for(var j=0;j<output.length;j++){
 					
 					if(output[j].kind == 'string'){
