@@ -4,7 +4,7 @@ var hasTitle = false;
 var titleName = '';
 
 async function handleVariables(v,content,prefix){
-	console.log(v,content,prefix);
+
 	let out = [];
 	let tc = content.split(new RegExp(`{{${v.name}\..+}}`,'gm'));
 	let tm = content.match(new RegExp(`{{${v.name}\..+}}`,'gm'));
@@ -31,7 +31,7 @@ async function handleVariables(v,content,prefix){
 	while(count1<tc.length){
 		
 		if(prefix){
-			console.log(tm[count2]);
+
 			let tk = tm[count2].match(/\..+[^}]/gm)[0].substr(1);
 			if(tk == 'index'){
 				out.push({
@@ -69,7 +69,7 @@ async function handleVariables(v,content,prefix){
 		}
 		count1++;
 	}
-	console.log(out);
+
 	return out;
 }
 
