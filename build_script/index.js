@@ -4,6 +4,7 @@ var hasTitle = false;
 var titleName = '';
 
 async function handleVariables(v,content,prefix){
+	console.log(v,content,prefix);
 	let out = [];
 	let tc = content.split(new RegExp(`{{${v.name}\..+}}`,'gm'));
 	let tm = content.match(new RegExp(`{{${v.name}\..+}}`,'gm'));
@@ -30,14 +31,25 @@ async function handleVariables(v,content,prefix){
 	while(count1<tc.length){
 		
 		if(prefix){
-		let tk = tm[count2].match(/\..+[^}]/gm)[0].substr(1);
-			out.push({
-				kind:'php',
-				value:`
-				if (  empty( $item_${v.name}->${tk} ) ) echo '${v.default}';
-				else echo $item_${v.name}->${tk};
-				`
-			})
+			console.log(tm[count2]);
+			let tk = tm[count2].match(/\..+[^}]/gm)[0].substr(1);
+			if(tk == 'index'){
+				out.push({
+					kind:'php',
+					value:`
+					echo $${v.name}_count;
+					`
+				})
+			}else{
+				out.push({
+					kind:'php',
+					value:`
+					if (  empty( $item_${v.name}->${tk} ) ) echo '${v.default}';
+					else echo $item_${v.name}->${tk};
+					`
+				})
+			}
+			
 		}else{
 			out.push({
 				kind:'php',
@@ -57,6 +69,7 @@ async function handleVariables(v,content,prefix){
 		}
 		count1++;
 	}
+	console.log(out);
 	return out;
 }
 
@@ -82,7 +95,9 @@ async function splitFor(rs,c,v){
 		var ma = match[count2].replace(r1,'').replace(r2,'');	
 		out.push({
 			kind:'php',
-			value:`foreach ($${v.name} as $item_${v.name}){`
+			value:`
+			$${v.name}_count = 0;
+			foreach ($${v.name} as $item_${v.name}){`
 			})	
 		let tmaRes = await handleVariables(v,ma,true);
 
@@ -90,8 +105,10 @@ async function splitFor(rs,c,v){
 
 			out.push({
 				kind:'php',
-				value:'}'
-			})
+				value:`
+				$${v.name}_count++;
+			}`
+		})
 		count2++;
 		if(t[count1] && t[count1] != ''){
 			out.push({
@@ -189,46 +206,46 @@ async function createForm(vl){
 	for(var i=0;i<vl.length;i++){
 		if(['color','date','datetime-local','text','email','month','number','range','number','tel','time','url','week'].indexOf(vl[i].kind) != -1){
 			out+=`
-<p>
-    <label for="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>">
-      <?php _e( '${vl[i].title}:' ); ?>
-    </label>
-    <input class="widefat" id="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>" name="<?php echo $this->get_field_name( '${vl[i].name}' ); ?>" type="text" value="<?php echo esc_attr( $${vl[i].name} ); ?>" />
-</p>
+			<p>
+			<label for="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>">
+			<?php _e( '${vl[i].title}:' ); ?>
+			</label>
+			<input class="widefat" id="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>" name="<?php echo $this->get_field_name( '${vl[i].name}' ); ?>" type="text" value="<?php echo esc_attr( $${vl[i].name} ); ?>" />
+			</p>
 			`;
 		}else if(vl[i].kind == 'boolean'){
 			out+=`
-<p>
-	<input class="checkbox" type="checkbox" <?php checked( $instance[ '${vl[i].name}' ], 'true' ); ?> id="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>" name="<?php echo $this->get_field_name( '${vl[i].name}' ); ?>" /> 
-	<label for="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>">${vl[i].title}</label>
-</p>
+			<p>
+			<input class="checkbox" type="checkbox" <?php checked( $instance[ '${vl[i].name}' ], 'true' ); ?> id="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>" name="<?php echo $this->get_field_name( '${vl[i].name}' ); ?>" /> 
+			<label for="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>">${vl[i].title}</label>
+			</p>
 			`;
 		}else if(vl[i].kind == 'media'){
 			out+=`
-<p>
-	<div id="display-media-upload-btn<?php echo $this->get_field_id( '${vl[i].name}' ); ?>" style="height: 150px;    margin-bottom: 5px;background-size: cover;background-image:url(\'<?php echo esc_attr( $${vl[i].name} ); ?>\')"></div> 
-	<button class="button button-secondary media-upload-btn"  id="media-upload-btn<?php echo $this->get_field_id( '${vl[i].name}' ); ?>"><?php _e( '${vl[i].title}' ); ?> </button>
-	<input  value="<?php echo esc_attr( $${vl[i].name} ); ?>" class="widefat" name="<?php echo $this->get_field_name( '${vl[i].name}' ); ?>" type="hidden"   id="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>"/>
-</p>
+			<p>
+			<div id="display-media-upload-btn<?php echo $this->get_field_id( '${vl[i].name}' ); ?>" style="height: 150px;    margin-bottom: 5px;background-size: cover;background-image:url(\'<?php echo esc_attr( $${vl[i].name} ); ?>\')"></div> 
+			<button class="button button-secondary media-upload-btn"  id="media-upload-btn<?php echo $this->get_field_id( '${vl[i].name}' ); ?>"><?php _e( '${vl[i].title}' ); ?> </button>
+			<input  value="<?php echo esc_attr( $${vl[i].name} ); ?>" class="widefat" name="<?php echo $this->get_field_name( '${vl[i].name}' ); ?>" type="hidden"   id="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>"/>
+			</p>
 			`;
 		}else if(vl[i].kind == 'gallery'){
 			out+=`
-<p>
-    <label for="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>">  
-     <?php _e( '${vl[i].title}' ); ?>
-    </label>
-<select class='widefat' id="<?php echo $this->get_field_id('${vl[i].name}'); ?>"
-                name="<?php echo $this->get_field_name('${vl[i].name}'); ?>" type="text">
-<?php 
-foreach($results as $res){
-  echo '<option value="';
-  echo $res->id .'" ';
-  echo ($${vl[i].name}=="$res->id")?'selected':'';
-  echo '>'.$res->name.'</option>';
-}
-?>
-</select>
-</p>
+			<p>
+			<label for="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>">  
+			<?php _e( '${vl[i].title}' ); ?>
+			</label>
+			<select class='widefat' id="<?php echo $this->get_field_id('${vl[i].name}'); ?>"
+			name="<?php echo $this->get_field_name('${vl[i].name}'); ?>" type="text">
+			<?php 
+			foreach($results as $res){
+				echo '<option value="';
+				echo $res->id .'" ';
+				echo ($${vl[i].name}=="$res->id")?'selected':'';
+				echo '>'.$res->name.'</option>';
+			}
+			?>
+			</select>
+			</p>
 			`;
 		}
 	}
@@ -257,13 +274,13 @@ module.exports = {
 			var cv = config.variables[i];
 			if(cv.kind == 'gallery'){
 				out += `
-$image_entry_table = $wpdb->prefix . "wgp_image_entry"; 	
-if($${cv.name} != '' && $${cv.name} != null){
-$tmp_res = $wpdb->get_results("SELECT * FROM $image_entry_table WHERE gallery_id=$${cv.name}");
-$${cv.name}	= $tmp_res;
-}else {
-	$${cv.name}	= array();
-}
+				$image_entry_table = $wpdb->prefix . "wgp_image_entry"; 	
+				if($${cv.name} != '' && $${cv.name} != null){
+					$tmp_res = $wpdb->get_results("SELECT * FROM $image_entry_table WHERE gallery_id=$${cv.name}");
+					$${cv.name}	= $tmp_res;
+				}else {
+					$${cv.name}	= array();
+				}
 				`;
 			}
 		}
@@ -272,16 +289,16 @@ $${cv.name}	= $tmp_res;
 	},
 	general_info: async(config)=>{
 		var out = `
-parent::__construct(	
-//Base ID
-'wp_wt_${config.widget_name.replace(/\s+/gm,'')}${config.id.replace(/\s+/gm,'')}',
+		parent::__construct(	
+		//Base ID
+		'wp_wt_${config.widget_name.replace(/\s+/gm,'')}${config.id.replace(/\s+/gm,'')}',
 
-//Widget name
-__('${config.widget_name}', 'wpb_widget_domain'), 
+		//Widget name
+		__('${config.widget_name}', 'wpb_widget_domain'), 
 
-// Widget description
-array( 'description' => __( '${config.widget_description}', 'wpb_widget_domain' ), ) 
-);
+		// Widget description
+		array( 'description' => __( '${config.widget_description}', 'wpb_widget_domain' ), ) 
+		);
 		$this->defaults = array(`;
 		for(var i=0;i<config.variables.length;i++){
 			out += `'${config.variables[i].name}' => '${ (config.variables[i].default !== undefined) ? config.variables[i].default : ''}',\n`;
@@ -311,12 +328,12 @@ array( 'description' => __( '${config.widget_description}', 'wpb_widget_domain' 
 		var hasGallery = false;
 		if(!hasTitle){
 			out += `
-				if ( isset( $instance[ '${titleName}' ] ) ) {
-					$${titleName} = $instance[ '${titleName}' ];
-				}else {
-					$${titleName} = __( '', 'wpb_widget_domain' );
-				}
-				`;
+			if ( isset( $instance[ '${titleName}' ] ) ) {
+				$${titleName} = $instance[ '${titleName}' ];
+			}else {
+				$${titleName} = __( '', 'wpb_widget_domain' );
+			}
+			`;
 		}
 		for(var i=0;i<config.variables.length;i++){
 			if(config.variables[i].kind =='boolean'){
@@ -347,9 +364,9 @@ array( 'description' => __( '${config.widget_description}', 'wpb_widget_domain' 
 			}
 		}
 		if(hasGallery) out+=`
-global $wpdb;
-$gallery_table = $wpdb->prefix . "wgp_gallery";
-$results = $wpdb->get_results("SELECT name, id FROM $gallery_table");
+			global $wpdb;
+		$gallery_table = $wpdb->prefix . "wgp_gallery";
+		$results = $wpdb->get_results("SELECT name, id FROM $gallery_table");
 		`;
 		out += '?>\n';
 

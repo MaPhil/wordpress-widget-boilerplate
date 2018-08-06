@@ -1,6 +1,8 @@
 module.exports = {
 	widget_name:'test', //only a-z, A-Z, 0-9 und _
 	widget_description:'',
+	use_dist_folder:true, //if set to false the path to the widget folder needs to be supplied
+	path_to_widget_folder:'',
 	version:'0.0.1',
 	id:'00001',
 	scripts:[{

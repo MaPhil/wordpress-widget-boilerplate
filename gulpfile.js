@@ -7,6 +7,20 @@ fs = require('fs');
 
 let path = `${__dirname}/dist/${config.widget_name.replace(/\s+/gm,'')}`;
 
+if(config.use_dist_folder == false) path = `${config.path_to_widget_folder}/${config.widget_name.replace(/\s+/gm,'')}`;
+
+
+var ensurePath = () =>{
+  return new Promise(resolve=>{
+    exec(`mkdir -p ${path}`,()=>{
+      exec(`touch ${path}/widget.php`,()=>{
+        resolve();
+      });
+    })
+  })
+};
+
+
 // Compile Our Sass
 gulp.task('build', async () => {
 
@@ -37,8 +51,10 @@ gulp.task('build', async () => {
     }
   }
   `;
-  fs.writeFileSync(`${path}/widget.php`, out);
-  return true;
+  ensurePath().then(()=>{
+    fs.writeFileSync(`${path}/widget.php`, out);
+    return true;
+  })
 });
 gulp.task('assemble', async () => {
   await exec(`mkdir -p ${path}/assets`);
@@ -50,10 +66,6 @@ gulp.task('assemble', async () => {
   return true;
 });
 
-gulp.task('ensureFolder', async () =>{
-  await exec(`mkdir -p ${path}`);
-  return true;
-});
 
 gulp.task('watch', function () {
   gulp.watch('config.js', ['build','assemble']);
