@@ -204,7 +204,7 @@ async function splitIf(rs,c,v){
 async function createForm(vl){
 	var out = '';
 	for(var i=0;i<vl.length;i++){
-		if(['color','date','datetime-local','text','email','month','number','range','number','tel','time','url','week'].indexOf(vl[i].kind) != -1){
+		if(['color','date','datetime-local','email','title','month','number','range','number','tel','time','url','week'].indexOf(vl[i].kind) != -1){
 			out+=`
 			<p>
 			<label for="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>">
@@ -220,8 +220,16 @@ async function createForm(vl){
 			<label for="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>">${vl[i].title}</label>
 			</p>
 			`;
-		}else if(vl[i].kind == 'media'){
+		}else if(vl[i].kind == 'text'){
 			out+=`
+			<p class="wwt-text">			 	
+			<label for="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>">${vl[i].title}</label>
+			<input  value="<?php echo  $${vl[i].name}  ?>" class="widefat" name="<?php echo $this->get_field_name( '${vl[i].name}' ); ?>" type="hidden"   id="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>"/>
+			<textarea class="wwt-editor"> <?php echo  $${vl[i].name}  ?> </textarea>
+			</p>
+			`;
+		}else if(vl[i].kind == 'media'){
+			out+=` 
 			<p>
 			<div id="display-media-upload-btn<?php echo $this->get_field_id( '${vl[i].name}' ); ?>" style="height: 150px;    margin-bottom: 5px;background-size: cover;background-image:url(\'<?php echo esc_attr( $${vl[i].name} ); ?>\')"></div> 
 			<button class="button button-secondary media-upload-btn"  id="media-upload-btn<?php echo $this->get_field_id( '${vl[i].name}' ); ?>"><?php _e( '${vl[i].title}' ); ?> </button>
@@ -264,9 +272,13 @@ module.exports = {
 		}
 		for(var i=0;i<config.variables.length;i++){
 			if(config.variables[i].kind == 'title'){
-				out+= `$${config.variables[i].name} = null;\nif (! empty( $instance['${config.variables[i].name}'] ) ) $${config.variables[i].name} = apply_filters( 'widget_title', $instance['${config.variables[i].name}'] );\n`;
+				out+= `$${config.variables[i].name} = null;\nif (! empty( $instance['${config.variables[i].name}'] ) ) $${config.variables[i].name} = apply_filters( 'widget_title', $instance['${config.variables[i].name}'] );
+				else $${config.variables[i].name} = '';
+				\n`;
 			}else{
-				out+= `$${config.variables[i].name} = null;\nif (! empty( $instance['${config.variables[i].name}'] ) ) $${config.variables[i].name} = apply_filters( 'widget_text', $instance['${config.variables[i].name}'] );\n`;
+				out+= `$${config.variables[i].name} = null;\nif (! empty( $instance['${config.variables[i].name}'] ) ) $${config.variables[i].name} = apply_filters( 'widget_text', $instance['${config.variables[i].name}'] );
+				else $${config.variables[i].name} = '';
+				\n`;
 			}
 		}
 		out+='global $wpdb;\n';
@@ -317,7 +329,14 @@ module.exports = {
 		var out ='';
 		out +='$instance = array();';
 		for(var i=0;i<config.variables.length;i++){
-			out+=`\n$instance['${config.variables[i].name}']= ( ! empty( $new_instance['${config.variables[i].name}'] ) ) ? strip_tags( $new_instance['${config.variables[i].name}'] ) : '';`;
+			if(config.variables[i].kind == 'text'){
+				out+=`\nif(current_user_can( 'unfiltered_html' )){
+					$instance['${config.variables[i].name}']=  $new_instance['${config.variables[i].name}'] ;
+				}else {
+					$instance['${config.variables[i].name}'] = wp_kses_post($new_instance['${config.variables[i].name}']);
+				}`;
+			}
+			else out+=`\n$instance['${config.variables[i].name}']= ( ! empty( $new_instance['${config.variables[i].name}'] ) ) ? strip_tags( $new_instance['${config.variables[i].name}'] ) : '';`;
 		}
 		if(!hasTitle)out+=`\n$instance['${titleName}']= ( ! empty( $new_instance['${titleName}'] ) ) ? strip_tags( $new_instance['${titleName}'] ) : '';`;
 		out+='\n return $instance;';
