@@ -204,7 +204,16 @@ async function splitIf(rs,c,v){
 async function createForm(vl){
 	var out = '';
 	for(var i=0;i<vl.length;i++){
-		if(['color','date','datetime-local','email','title','month','number','range','number','tel','time','url','week'].indexOf(vl[i].kind) != -1){
+		if(['color','date','datetime-local','email','text','month','number','range','number','tel','time','url','week'].indexOf(vl[i].kind) != -1){
+			out+=`
+			<p>
+			<label for="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>">
+			<?php _e( '${vl[i].title}:' ); ?>
+			</label>
+			<input class="widefat" id="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>" name="<?php echo $this->get_field_name( '${vl[i].name}' ); ?>" type="${vl[i].kind}" value="<?php echo esc_attr( $${vl[i].name} ); ?>" />
+			</p>
+			`;
+		}else if(vl[i].kind == 'title'){
 			out+=`
 			<p>
 			<label for="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>">
@@ -220,7 +229,7 @@ async function createForm(vl){
 			<label for="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>">${vl[i].title}</label>
 			</p>
 			`;
-		}else if(vl[i].kind == 'text'){
+		}else if(vl[i].kind == 'rich-text'){
 			out+=`
 			<p>
 			<button class="wp-wt-open-editor" related="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>"><?php _e( '${vl[i].title}' ); ?></button>
