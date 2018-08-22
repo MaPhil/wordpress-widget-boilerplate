@@ -38,10 +38,14 @@ gulp.task('build', async () => {
 
       for(var i=0;i<template.length;i++){
         if(template[i].kind=='php')out +=`\n${template[i].value}\n`;
-        else out +=`\necho '${template[i].value.replace(/\r?\n|\r/g,'')}';\n`;
+        else out +=`\?> ${template[i].value.replace(/\r?\n|\r/g,'')} <?php\n`;
       }
       out +=`
       echo $args['after_widget'];
+    }
+    public function enqueue_admin_scripts() {
+      wp_enqueue_editor();
+      wp_enqueue_media();
     }
     public function form($instance){
       ${await build.form(config)}

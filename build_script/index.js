@@ -222,10 +222,9 @@ async function createForm(vl){
 			`;
 		}else if(vl[i].kind == 'text'){
 			out+=`
-			<p class="wwt-text">			 	
-			<label for="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>">${vl[i].title}</label>
-			<input  value="<?php echo  $${vl[i].name}  ?>" class="widefat" name="<?php echo $this->get_field_name( '${vl[i].name}' ); ?>" type="hidden"   id="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>"/>
-			<textarea class="wwt-editor"> <?php echo  $${vl[i].name}  ?> </textarea>
+			<p>
+			<button class="wp-wt-open-editor" related="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>"><?php _e( '${vl[i].title}' ); ?></button>
+			<input class="widefat" id="<?php echo $this->get_field_id( '${vl[i].name}' ); ?>" name="<?php echo $this->get_field_name( '${vl[i].name}' ); ?>" type="hidden" value="<?php echo esc_attr( $${vl[i].name} ); ?>" />
 			</p>
 			`;
 		}else if(vl[i].kind == 'media'){
@@ -259,6 +258,8 @@ async function createForm(vl){
 	}
 	return out;
 }
+
+
 module.exports = {
 
 	widget_basis: async(config)=>{
