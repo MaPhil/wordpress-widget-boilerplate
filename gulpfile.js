@@ -67,12 +67,17 @@ gulp.task('assemble', async () => {
     if(s.kind =='style') await exec(`cp ${__dirname}/css/${s.file} ${path}/assets/${s.file}`);
     else await exec(`cp ${__dirname}/js/${s.file} ${path}/assets/${s.file}`)
   }
-  return true;
+return true;
 });
 
-
+gulp.task('reload',function(){
+  exec('gulp',function(){
+    process.exit();
+  })
+})
 gulp.task('watch', function () {
-  gulp.watch('config.js', ['build','assemble']);
+
+  gulp.watch('configuration/*.js',['reload']);
   gulp.watch('html/index.html',['build','assemble']);
   gulp.watch('css/**/*.css',['assemble']);
   gulp.watch('js/**/*.js',['assemble']);
