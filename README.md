@@ -45,12 +45,12 @@ The **scripts.js** will manage all the scripts that should be loaded to the fron
     module.exports = [{
     	kind:'style',
     	name:'style',
-        source:0,
+	source:0,
     	file:'style.css'
     },{
     	kind:'script',
     	name:'code',
-        source:0,
+	source:0,
     	file:'test.js'
     }]
 
