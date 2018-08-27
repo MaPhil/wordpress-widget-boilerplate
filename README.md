@@ -43,16 +43,16 @@ If you want to use a gallery you will first need to install the [gallery plugin]
 The **scripts.js** will manage all the scripts that should be loaded to the frontend. This file should look something like this: 
 
     module.exports = [{
-    	kind:'style',
-    	name:'style',
-	source:0,
-    	file:'style.css'
-    },{
-    	kind:'script',
-    	name:'code',
-	source:0,
-    	file:'test.js'
-    }]
+		kind:'style',
+		name:'style',
+		source:0,
+		file:'style.css'
+	},{
+		kind:'script',
+		name:'code',
+		source:0,
+		file:'test.js'
+	}]
 
  If you want to integrate files that are in the scripts/style folder you need to need to use source = 0. If the source comes from the assets folder becouse it has more than one file you need to use source = 1 and for completely external sources you need to write source = 3.
 
