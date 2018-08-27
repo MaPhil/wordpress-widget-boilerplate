@@ -252,6 +252,7 @@ async function createForm(vl){
 			</label>
 			<select class='widefat' id="<?php echo $this->get_field_id('${vl[i].name}'); ?>"
 			name="<?php echo $this->get_field_name('${vl[i].name}'); ?>" type="text">
+			<option disabled selected value> -- select an option -- </option>
 			<?php 
 			foreach($results as $res){
 				echo '<option value="';
@@ -274,8 +275,16 @@ module.exports = {
 	widget_basis: async(config)=>{
 		var out ='extract($args);\n';
 		for(var i=0;i<config.scripts.length;i++){
-			if(config.scripts[i].kind == 'style')out+=`wp_enqueue_style('${config.widget_name.replace(/\s+/gm,'')}_sid_${i}', get_template_directory_uri() . "/widgets/${config.widget_name.replace(/\s+/gm,'')}/assets/${config.scripts[i].file}",array(), '1.0.0','all');\n`;
-			else out+=`wp_enqueue_script('${config.widget_name.replace(/\s+/gm,'')}_sid_${i}', get_template_directory_uri() . "/widgets/${config.widget_name.replace(/\s+/gm,'')}/assets/${config.scripts[i].file}",array(), '1.0.0',false);\n`;
+			if(!config.scripts[i].source ||config.scripts[i].source == 0){
+				if(config.scripts[i].kind == 'style')out+=`wp_enqueue_style('${config.widget_name.replace(/\s+/gm,'')}_sid_${i}', get_template_directory_uri() . "/widgets/${config.widget_name.replace(/\s+/gm,'')}/assets/${config.scripts[i].file}",array(), '1.0.0','all');\n`;
+				else out+=`wp_enqueue_script('${config.widget_name.replace(/\s+/gm,'')}_sid_${i}', get_template_directory_uri() . "/widgets/${config.widget_name.replace(/\s+/gm,'')}/assets/${config.scripts[i].file}",array(), '1.0.0',false);\n`;
+			} else if(config.scripts[i].source ==1){
+				if(config.scripts[i].kind == 'style')out+=`wp_enqueue_style('${config.widget_name.replace(/\s+/gm,'')}_sid_${i}', get_template_directory_uri() . "/widgets/${config.widget_name.replace(/\s+/gm,'')}/assets/${config.scripts[i].file}",array(), '1.0.0','all');\n`;
+				else out+=`wp_enqueue_script('${config.widget_name.replace(/\s+/gm,'')}_sid_${i}', get_template_directory_uri() . "/widgets/${config.widget_name.replace(/\s+/gm,'')}/assets/${config.scripts[i].file}",array(), '1.0.0',false);\n`;
+			} else {
+				if(config.scripts[i].kind == 'style')out+=`wp_enqueue_style('${config.widget_name.replace(/\s+/gm,'')}_sid_${i}',  "${config.scripts[i].file}" ,array(), '1.0.0',false);\n`;
+				else out+=`wp_enqueue_script('${config.widget_name.replace(/\s+/gm,'')}_sid_${i}', "${config.scripts[i].file}" ,array(), '1.0.0',false);\n`;
+			}
 		}
 		if(!hasTitle){
 			out+= `$${titleName} = null;\nif (! empty( $instance['${titleName}'] ) ) $${titleName} = apply_filters( 'widget_title', $instance['${titleName}'] );\n`;

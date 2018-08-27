@@ -62,12 +62,15 @@ gulp.task('build', async () => {
 });
 gulp.task('assemble', async () => {
   await exec(`mkdir -p ${path}/assets`);
-  for(var i=0;i<config.scripts.length;i++){
-    var s = config.scripts[i];
-    if(s.kind =='style') await exec(`cp ${__dirname}/css/${s.file} ${path}/assets/${s.file}`);
-    else await exec(`cp ${__dirname}/js/${s.file} ${path}/assets/${s.file}`)
+  await exec(`cp -r ${__dirname}/assets ${path}/`)
+    for(var i=0;i<config.scripts.length;i++){
+      var s = config.scripts[i];
+      if(!s.source || s.source == 0){
+        if(s.kind =='style') await exec(`cp ${__dirname}/css/${s.file} ${path}/assets/${s.file}`);
+        else await exec(`cp ${__dirname}/js/${s.file} ${path}/assets/${s.file}`)
+      }
   }
-return true;
+  return true;
 });
 
 gulp.task('reload',function(){
